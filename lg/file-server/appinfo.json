@@ -1,0 +1,10 @@
+{
+  "id": "com.github.dobrosi.dlnaserver",
+  "version": "1.0.0",
+  "vendor": "My Company",
+  "type": "web",
+  "main": "index.html",
+  "title": "FileServer",
+  "icon": "icon.png",
+  "largeIcon": "largeIcon.png"
+}

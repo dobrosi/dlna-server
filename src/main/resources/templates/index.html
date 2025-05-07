@@ -11,12 +11,15 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
+      background: #bbbbbb;
+      color: black;
     }
     .grid {
+      margin: 50px;
       display: grid;
-      grid-template-columns: repeat(auto-fill, 200px);
-      grid-auto-rows: 200px;
-      gap: 5px;
+      grid-template-columns: repeat(auto-fill, 430px);
+      grid-auto-rows: 250px;
+      gap: 20px;
       padding: 5px;
       justify-content: center;
       height: 100vh;
@@ -40,18 +43,78 @@
     }
 
     .file-button .icon {
-      font-size: 24px;
+      font-size: 40px;
       margin-bottom: 6px;
     }
 
     .file-button .label {
-      font-size: 14px;
+      font-size: 30px;
       word-break: break-word;
     }
     .file-button:focus {
-      outline: 3px solid blue;
+      outline: 10px solid blue;
     }
   </style>
+<script lang="javascript">
+  
+  window.onload = function() {
+    gridEl = document.getElementById("grid");
+    window.addEventListener("resize", updateCols);
+    document.addEventListener("keydown", (e) => {
+        const focused = document.activeElement;
+        if (!focused.classList.contains("file-button")) return;
+
+        const index = parseInt(focused.getAttribute("data-index"));
+
+        let newIndex = index;
+
+        switch (e.key) {
+          case "ArrowRight":
+            newIndex = index + 1;
+            break;
+          case "ArrowLeft":
+            newIndex = index - 1;
+            break;
+          case "ArrowDown":
+            newIndex = index + cols;
+            break;
+          case "ArrowUp":
+            newIndex = index - cols;
+            break;
+          case "Enter":
+            focused.click();
+            return;
+        }
+        focusButton(newIndex);
+    });
+    updateCols();
+    focusButton(0);
+  }
+
+  let cols = 0;
+  function updateCols() {
+    const gridStyle = getComputedStyle(gridEl);
+    const colWidth = 430 + 20; // gomb + gap
+    const gridWidth = gridEl.clientWidth;
+    cols = Math.floor(gridWidth / colWidth);
+  };
+
+  function focusButton(i) {
+  	let b = document.querySelector('[data-index="'+i+'"]');
+  	if(b) b.focus()
+  }
+
+  function navigate(btn) {
+    const path = btn.getAttribute('data-href');
+    const type = btn.getAttribute('data-type');
+    const page = type === 'DIRECTORY' ? '' : 'video';
+    if (path) {
+      window.location.href = page + "?path=" + path;
+    } else {
+      window.location.href = window.location.pathname
+    }
+  }
+</script>
 </head>
 <body>
 
@@ -65,73 +128,14 @@
     <!-- Ikon hozzáadása a típus alapján -->
     <div class="icon">
       <i th:if="${file.type.name() == 'DIRECTORY'}" class="fas fa-folder"></i>
+      <!--
       <i th:if="${file.type.name() == 'FILE'}" class="fas fa-file"></i>
+      -->
     </div>
 
     <!-- Gomb szövege -->
     <span class="label" th:text="${file.title}"></span>
   </button>
 </div>
-
-<script>
-  const gridEl = document.getElementById("grid");
-
-  let cols = 0;
-  const updateCols = () => {
-    const gridStyle = getComputedStyle(gridEl);
-    const colWidth = 100 + 5; // gomb + gap
-    const gridWidth = gridEl.clientWidth;
-    cols = Math.floor(gridWidth / colWidth);
-  };
-
-  updateCols();
-  window.addEventListener("resize", updateCols);
-
-  document.addEventListener("keydown", (e) => {
-    const focused = document.activeElement;
-    if (!focused.classList.contains("file-button")) return;
-
-    const index = parseInt(focused.getAttribute("data-index"));
-
-    let newIndex = index;
-
-    switch (e.key) {
-      case "ArrowRight":
-        newIndex = index + 1;
-        break;
-      case "ArrowLeft":
-        newIndex = index - 1;
-        break;
-      case "ArrowDown":
-        newIndex = index + cols;
-        break;
-      case "ArrowUp":
-        newIndex = index - cols;
-        break;
-      case "Enter":
-        focused.click();
-        return;
-    }
-
-    focus(newIndex);
-  });
-
-  const focus = (i) => {
-  	document.querySelector(`[data-index="${i}"]`)?.focus();
-  }
-  focus(0);
-
-  function navigate(btn) {
-    const path = btn.getAttribute('data-href');
-    const type = btn.getAttribute('data-type');
-    const page = type === 'DIRECTORY' ? '' : 'play';
-    if (path) {
-      window.location.href = page + "?path=" + path;
-    } else {
-      window.location.href = window.location.pathname
-    }
-  }
-</script>
-
 </body>
 </html>
