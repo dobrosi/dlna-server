@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>Files</title>
+  <!-- Font Awesome (CDN link) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 100px);
+      grid-auto-rows: 100px;
+      gap: 5px;
+      padding: 5px;
+      justify-content: center;
+      height: 100vh;
+      box-sizing: border-box;
+    }
+
+    .file-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100px;      /* fix méret */
+      height: 100px;
+      padding: 8px;
+      text-align: center;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      cursor: pointer;
+      font-family: sans-serif;
+    }
+
+    .file-button .icon {
+      font-size: 24px;
+      margin-bottom: 6px;
+    }
+
+    .file-button .label {
+      font-size: 14px;
+      word-break: break-word;
+    }
+    .file-button:focus {
+      outline: 3px solid blue;
+    }
+  </style>
+</head>
+<body>
+
+<div class="grid" id="grid">
+  <button th:each="file, iter : ${files}"
+          onclick="navigate(this)"
+          th:attr="data-index=${iter.index},data-href=${file.url},data-type=${file.type.name()}"
+          class="file-button"
+          tabindex="${iter.index}">
+
+    <!-- Ikon hozzáadása a típus alapján -->
+    <div class="icon">
+      <i th:if="${file.type.name() == 'DIRECTORY'}" class="fas fa-folder"></i>
+      <i th:if="${file.type.name() == 'FILE'}" class="fas fa-file"></i>
+    </div>
+
+    <!-- Gomb szövege -->
+    <span class="label" th:text="${file.title}"></span>
+  </button>
+</div>
+
+<script>
+  const gridEl = document.getElementById("grid");
+
+  let cols = 0;
+  const updateCols = () => {
+    const gridStyle = getComputedStyle(gridEl);
+    const colWidth = 100 + 5; // gomb + gap
+    const gridWidth = gridEl.clientWidth;
+    cols = Math.floor(gridWidth / colWidth);
+  };
+
+  updateCols();
+  window.addEventListener("resize", updateCols);
+
+  document.addEventListener("keydown", (e) => {
+    const focused = document.activeElement;
+    if (!focused.classList.contains("file-button")) return;
+
+    const index = parseInt(focused.getAttribute("data-index"));
+
+    let newIndex = index;
+
+    switch (e.key) {
+      case "ArrowRight":
+        newIndex = index + 1;
+        break;
+      case "ArrowLeft":
+        newIndex = index - 1;
+        break;
+      case "ArrowDown":
+        newIndex = index + cols;
+        break;
+      case "ArrowUp":
+        newIndex = index - cols;
+        break;
+      case "Enter":
+        focused.click();
+        return;
+    }
+
+    focus(newIndex);
+  });
+
+  const focus = (i) => {
+  	document.querySelector(`[data-index="${i}"]`)?.focus();
+  }
+  focus(0);
+
+  function navigate(btn) {
+    const path = btn.getAttribute('data-href');
+    const type = btn.getAttribute('data-type');
+    const page = type === 'DIRECTORY' ? '' : 'play';
+    if (path) {
+      window.location.href = page + "?path=" + path;
+    } else {
+      window.location.href = window.location.pathname
+    }
+  }
+</script>
+
+</body>
+</html>
