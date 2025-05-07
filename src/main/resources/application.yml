@@ -1,1 +1,4 @@
 file.server.path: ""
+spring:
+  application:
+    name: dlna-server
