@@ -32,10 +32,10 @@ public class StreamService {
     }
 
     public ResponseEntity<StreamingResponseBody> prepareDownloadContent(
-        File file,
-        Long fileSize,
-        String range,
-        boolean inline) {
+            File file,
+            Long fileSize,
+            String range,
+            boolean inline) {
 
         logger.info(format("prepareContent,%s,%d,%s", file.getName(), fileSize, range));
 
@@ -62,27 +62,27 @@ public class StreamService {
         }
         long rangeSize = rangeEnd - rangeStart;
         return ResponseEntity
-            .status(httpStatus)
-            .contentLength(rangeSize)
-            //.contentType(APPLICATION_OCTET_STREAM)
-            .header(CONTENT_TYPE, "video/x-matroska")
-            .header(CONTENT_DISPOSITION, getContentDisposition(file.getName(), inline))
-            .header(ACCEPT_RANGES, BYTES)
-            .header(CONTENT_RANGE, BYTES + " " + rangeStart + "-" + rangeEnd + "/" + fileSize)
-            .body(out -> {
-                try (RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r")) {
-                    randomAccessFile.seek(rangeStart);
-                    byte[] buffer = new byte[(int) Math.min(CHUNK_SIZE, rangeSize)];
-                    while (randomAccessFile.read(buffer) != -1) {
-                        StreamUtils.copy(buffer, out);
+                .status(httpStatus)
+                .contentLength(rangeSize)
+                //.contentType(APPLICATION_OCTET_STREAM)
+                .header(CONTENT_TYPE, "video/x-matroska")
+                .header(CONTENT_DISPOSITION, getContentDisposition(file.getName(), inline))
+                .header(ACCEPT_RANGES, BYTES)
+                .header(CONTENT_RANGE, BYTES + " " + rangeStart + "-" + rangeEnd + "/" + fileSize)
+                .body(out -> {
+                    try (RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r")) {
+                        randomAccessFile.seek(rangeStart);
+                        byte[] buffer = new byte[(int) Math.min(CHUNK_SIZE, rangeSize)];
+                        while (randomAccessFile.read(buffer) != -1) {
+                            StreamUtils.copy(buffer, out);
+                        }
                     }
-                }
-            });
+                });
     }
 
     public String getContentDisposition(
-        String filename,
-        boolean inline
+            String filename,
+            boolean inline
     ) {
         return format("%s; filename=\"%s\"", inline ? "inline" : "attachment", filename);
     }

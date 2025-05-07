@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Stream;
 
 import com.github.dobrosi.dlnaserver.configuration.FileServerConfiguration;
@@ -17,20 +19,19 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import static java.util.Comparator.comparing;
+
 @Data
 @Service
 @ManagedResource(
-    objectName="FileBeans:name=FileService",
-    description="FileService Bean")
+        objectName = "FileBeans:name=FileService",
+        description = "FileService Bean")
 public class FileService {
     private StreamService streamService;
     private FileServerConfiguration fileServerConfiguration;
 
     @Autowired
-    public FileService(
-        FileServerConfiguration fileServerConfiguration,
-        StreamService streamService) {
-
+    public FileService(FileServerConfiguration fileServerConfiguration, StreamService streamService) {
         this.fileServerConfiguration = fileServerConfiguration;
         this.streamService = streamService;
     }
@@ -51,26 +52,37 @@ public class FileService {
             fileItems.add(parent);
         }
         try (Stream<Path> stream = Files.list(fullPath)) {
-            fileItems.addAll(stream.map(this::toFileItem).sorted().toList());
+            fileItems.addAll(stream.map(this::toFileItem)
+                    .sorted((f1, f2) -> comparing(FileItem::getType)
+                            .thenComparing(
+                                    FileItem::getTitle, Collator.getInstance(new Locale("hu", "HU")))
+                            .compare(f1, f2))
+                    .toList());
         }
         return fileItems;
     }
 
-    private Path getFullPath(final String path) {
+    private Path getFullPath(String path) {
         return Paths.get(fileServerConfiguration.getPath()
-                             .toString() + path)
-            .normalize();
+                        .toString() + path)
+                .normalize();
     }
 
     private FileItem toFileItem(Path path) {
         FileItem fileItem = new FileItem();
-        fileItem.setTitle(path.getFileName().toString());
-        fileItem.setType(path.toFile().isDirectory() ? FileItem.Type.DIRECTORY : FileItem.Type.FILE);
-        fileItem.setUrl(path.toString().replace(fileServerConfiguration.getPath().toString(), ""));
+        fileItem.setTitle(path.getFileName()
+                .toString());
+        fileItem.setType(path.toFile()
+                .isDirectory() ? FileItem.Type.DIRECTORY : FileItem.Type.FILE);
+        fileItem.setUrl(path.toString()
+                .replace(
+                        fileServerConfiguration.getPath()
+                                .toString(), ""));
         return fileItem;
     }
 
-    public ResponseEntity<StreamingResponseBody> prepareDownloadContent(final String url, final String rangeHeader, final boolean inline) {
+    public ResponseEntity<StreamingResponseBody> prepareDownloadContent(
+            String url, String rangeHeader, boolean inline) {
         return streamService.prepareDownloadContent(getFullPath(url).toFile(), rangeHeader, inline);
     }
 }

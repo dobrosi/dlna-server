@@ -27,8 +27,8 @@ public class VideoController {
 
     @GetMapping("/play")
     public ResponseEntity<StreamingResponseBody> play(
-        @RequestParam String path,
-        @RequestHeader(value = "Range", required = false) String rangeHeader) {
+            @RequestParam String path,
+            @RequestHeader(value = "Range", required = false) String rangeHeader) {
         return fileService.prepareDownloadContent(path, rangeHeader, true);
     }
 }
