@@ -52,18 +52,27 @@
   const video = document.getElementById('videoPlayer');
 
   document.addEventListener('keydown', (e) => {
-    if (e.code === 'KeyF') {
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
-      } else {
-        video.requestFullscreen();
-      }
-    } else if (e.code === 'Space') {
-      if (video.paused) {
-        video.play();
-      } else {
-        video.pause();
-      }
+    switch (e.code) {
+      case "Backspace":
+        history.back()
+        break;
+      case 'KeyF':
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        } else {
+          video.requestFullscreen();
+        }
+        break;
+      case 'Space':
+        if (video.paused) {
+          video.play();
+        } else {
+          video.pause();
+        }
+        break;
+      default:
+        // Nem kezelt billentyűkódok
+        break;
     }
   });
 </script>

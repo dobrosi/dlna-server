@@ -21,6 +21,7 @@ public class IndexController {
     @GetMapping("/")
     public String showGrid(@RequestParam(required = false) String path, Model model) throws IOException {
         model.addAttribute("files", fileService.list(path));
+        model.addAttribute("parentPath", path);
         return "index";
     }
 }
