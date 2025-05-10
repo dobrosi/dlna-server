@@ -97,34 +97,18 @@
     gridEl = document.getElementById("grid");
     window.addEventListener("resize", updateCols);
     document.addEventListener("keydown", (e) => {
-        const focused = document.activeElement;
-        if (!focused.classList.contains("file-item")) return;
-
-        const index = parseInt(focused.getAttribute("data-index"));
-
-        let newIndex = index;
-
         switch (e.key) {
           case "Backspace":
             history.back()
             break;
           case "ArrowRight":
-            newIndex = index + 1;
-            break;
           case "ArrowLeft":
-            newIndex = index - 1;
-            break;
           case "ArrowDown":
-            newIndex = index + cols;
-            break;
           case "ArrowUp":
-            newIndex = index - cols;
-            break;
           case "Enter":
-            focused.click();
-            return;
+            focusButton(e);
+            break;
         }
-        focusButton(newIndex);
     });
 
     document.body.addEventListener('dragover', (e) => {
@@ -143,7 +127,7 @@
     });
 
     updateCols();
-    focusButton(0);
+    focusButtonIndex(0);
   }
 
   let cols = 1;
@@ -154,9 +138,35 @@
     cols = 1;
   }
 
-  function focusButton(i) {
-  	let b = document.querySelector('[data-index="'+i+'"]');
-  	if(b) b.focus()
+  function focusButton(e) {
+    const focused = document.activeElement;
+    let newIndex = 0;
+    const index = parseInt(focused.getAttribute("data-index"));
+    if (index !== null && !isNaN(index)) {
+      newIndex = index;
+      switch (e.code) {
+        case "ArrowRight":
+          newIndex = index + 1;
+          break;
+        case "ArrowLeft":
+          newIndex = index - 1;
+          break;
+        case "ArrowDown":
+          newIndex = index + cols;
+          break;
+        case "ArrowUp":
+          newIndex = index - cols;
+          break;
+        case "Enter":
+          focused.click();
+      }
+    }
+    focusButtonIndex(newIndex);
+  }
+
+  function focusButtonIndex(index) {
+    let b = document.querySelector('[data-index="' + index + '"]');
+    if(b) b.focus()
   }
 
   function navigate(btn) {
@@ -164,7 +174,7 @@
     const type = btn.getAttribute('data-type');
     const page = type === 'DIRECTORY' ? '' : 'video';
     if (path) {
-      window.location.href = page + "?path=" + path;
+      window.location.href = page + "?path=" + encodeURIComponent(path);
     } else {
       window.location.href = window.location.pathname
     }

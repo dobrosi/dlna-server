@@ -1,5 +1,7 @@
 package com.github.dobrosi.dlnaserver.controller;
 
+import java.net.URLEncoder;
+
 import com.github.dobrosi.dlnaserver.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +23,7 @@ public class VideoController {
 
     @GetMapping("/video")
     public String video(@RequestParam String path, Model model) {
-        model.addAttribute("url", "/play?path=" + path);
+        model.addAttribute("url", "/play?path=" + URLEncoder.encode(path));
         return "video";
     }
 
